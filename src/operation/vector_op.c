@@ -141,6 +141,6 @@ void vec_reduce_sum_f16(const size_t n, void *__restrict__ vx, float16 *__restru
     __m128h reduced_x = _mm_hadd_ph(x, x);
 #else
     perror("FP16 is not support by this device");
-    exit(EXIT_FAILURE)
+    exit(EXIT_FAILURE);
 #endif
 }
