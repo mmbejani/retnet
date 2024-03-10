@@ -31,7 +31,11 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
 
     __m128 x_partial;
     __m128 y_partial;
+#ifdef OMP
+    SET_OMP_THREADS();
 
+#pragma omp parallel for
+#endif
     for (int i = 0; i < n_partial; i += F32_AVX_NREG)
     {
         ax = _mm_loadu_ps(x + i);
@@ -79,7 +83,11 @@ void vec_dot_prod_f16(const size_t n, float16 *__restrict__ x, float16 *__restri
 
     __m128h x_partial;
     __m128h y_partial;
+#ifdef OMP
+    SET_OMP_THREADS();
 
+#pragma omp parallel for
+#endif
     for (int i = 0; i < n_partial; i += F16_AVX_NREG)
     {
         ax = _mm_loadu_ph(x + i);
