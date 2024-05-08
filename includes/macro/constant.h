@@ -4,6 +4,9 @@
 #define F32_AVX_NREG 4
 #define F16_AVX_NREG 8
 
+//quantization
+#define AWQ_BLOCK_SIZE 128
+
 
 
 
