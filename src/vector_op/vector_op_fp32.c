@@ -1,18 +1,18 @@
-#include "macro/device.h"
-#include "macro/constant.h"
-#include "macro/initialization.h"
-
-#include "operation/vector_op.h"
+#include "vector_op/vector_op_fp32.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <sys/sysinfo.h>
+
+#define AVX
+#define OMP
 
 #ifdef OMP
 #include <omp.h>
-#elif SIMD
+#endif
+#ifdef AVX
 #include <immintrin.h>
 #endif
+
 
 void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restrict__ y, float32 *__restrict__ result)
 {
@@ -22,7 +22,7 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
         perror("The allocation cannot be done currectly");
         exit(EXIT_FAILURE);
     }
-    float32 *z = (float32 *)vz;
+    result = (float32 *)vz;
 #ifdef AVX
     const int n_partial = (n & ~(F32_AVX_NREG - 1));
 #define F32_VEC_4 4
@@ -34,10 +34,10 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
 
     for (int i = 0; i < n_partial; i += F32_AVX_NREG)
     {
-        ax = _mm_loadu_ps(x + i);
-        ay = _mm_loadu_ps(y + i);
+        x_partial = _mm_loadu_ps(x + i);
+        y_partial = _mm_loadu_ps(y + i);
 
-        vec_sum = _mm_fmadd_ps(ax, ay, sums);
+        vec_sum = _mm_fmadd_ps(x_partial, y_partial, vec_sum);
     }
 
     vec_reduce_sum_f32(F32_AVX_NREG, &vec_sum, result);
@@ -49,6 +49,7 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
     return;
 #else
 #ifdef OMP
+    // use it with caution, this may make it slower! (the spwanning thread have overhead)
     SET_OMP_THREADS();
 
 #pragma omp parallel for
@@ -60,41 +61,6 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
 #endif
 
     return;
-}
-
-void vec_dot_prod_f16(const size_t n, float16 *__restrict__ x, float16 *__restrict__ y, float16 *__restrict__ result)
-{
-    void *vz;
-    if (posix_memalign(&vz, F32x8_AVX_ALGIN, sizeof(float32) * n) != 0)
-    {
-        perror("The allocation cannot be done currectly");
-        exit(EXIT_FAILURE);
-    }
-    float32 *z = (float32 *)vz;
-#ifdef AVX
-    const int n_partial = (n & ~(F16_AVX_NREG - 1));
-#define F16_VEC_8 8
-
-    __m128h vec_sum = _mm_setzero_ph();
-
-    __m128h x_partial;
-    __m128h y_partial;
-
-    for (int i = 0; i < n_partial; i += F16_AVX_NREG)
-    {
-        ax = _mm_loadu_ph(x + i);
-        ay = _mm_loadu_ph(y + i);
-
-        vec_sum = _mm_fmadd_ph(ax, ay, sums);
-    }
-
-    vec_reduce_sum_f16(F32_AVX_NREG, &vec_sum, result);
-
-    //[TODO] the remain values should be convert to fp-32 and normally computed
-#else
-    perror("The fp-16 is not supported on this device");
-    exit(EXIT_FAILURE);
-#endif
 }
 
 void vec_reduce_sum_f32(const size_t n, void *__restrict__ vx, float32 *__restrict__ result)
@@ -114,7 +80,7 @@ void vec_reduce_sum_f32(const size_t n, void *__restrict__ vx, float32 *__restri
 
     for (size_t i = 0; i < reduce_size; i++)
         r += x[i];
-#elif AVX
+#elif defined(AVX)
     __m128 x = *(__m128 *)vx;
     __m128 reduced_x = _mm_hadd_ps(x, x);
     *result = _mm_cvtss_f32(_mm_hadd_ps(reduced_x, reduced_x));
@@ -124,15 +90,4 @@ void vec_reduce_sum_f32(const size_t n, void *__restrict__ vx, float32 *__restri
         r += x[i];
 #endif
     *result = r;
-}
-
-void vec_reduce_sum_f16(const size_t n, void *__restrict__ vx, float16 *__restruct__)
-{
-#ifdef AVX
-    __m128h x = *(__m128h *)vx;
-    __m128h reduced_x = _mm_hadd_ph(x, x);
-#else
-    perror("FP16 is not support by this device");
-    exit(EXIT_FAILURE)
-#endif
 }

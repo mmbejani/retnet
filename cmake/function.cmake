@@ -1,0 +1,5 @@
+function(add_header_files)
+    include_directories(includes)
+    include_directories(includes/macro)
+    include_directories(includes/operation)
+endfunction()
