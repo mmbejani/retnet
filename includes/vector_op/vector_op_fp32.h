@@ -1,5 +1,6 @@
-#include "dtype.h"
 #include <stddef.h>
+
+#include "dtype.h"
 
 #include "macro/device.h"
 #include "macro/constant.h"

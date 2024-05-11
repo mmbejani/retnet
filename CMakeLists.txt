@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(retnet LANGUAGES C CUDA)
+project(retnet LANGUAGES C )
 
 include(cmake/function.cmake)
 include(cmake/intrin.cmake)
