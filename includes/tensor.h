@@ -1,8 +1,17 @@
 #include <stdint.h>
 #include <dtype.h>
 
+#include "quant/qtype.h"
+
+typedef char bool;
+const char true = 1;
+const char false = 0;
+
 typedef enum
 {
+    FLOAT32,
+    FLOAT16,
+    INT16,
     INT8,
     INT6,
     INT4,
@@ -18,6 +27,7 @@ typedef struct
     float32 *data;
     uint8_t *dims;
     uint8_t num_dims;
+    bool quant_exclude;
 } tensor;
 
 /**
@@ -28,10 +38,8 @@ typedef struct
 typedef struct
 {
     float32 *scales;
-    void *data;
+    block_8bit **data;
     uint16_t *block_dims;
-    uint16_t num_block_dims;
-    uint16_t num_blocks;
     uint16_t block_size;
     type dtype;
-} qtensor;
+} tensor8q;
