@@ -12,14 +12,14 @@ void logger(const log_tag tag, const char *message)
    switch (tag)
    {
    case INFO:
-      printf(ANSI_COLOR_GREEN);
-      printf("-- %s [INFO]: %s\n", ctime(&now), message);
-      printf(ANSI_COLOR_RESET);
+      printf(ANSI_COLOR_GREEN "-- %s [INFO]: %s\n" ANSI_COLOR_RESET, ctime(&now), message);
       break;
    case WARN:
-      printf(ANSI_COLOR_YELLOW);
-      printf("-- %s [WARN]: %s\n", ctime(&now), message);
-      print(ANSI_COLOR_RESET);
+      printf(ANSI_COLOR_YELLOW "-- %s [WARN]: %s\n" ANSI_COLOR_RESET, ctime(&now), message);
+      break;
+
+   case FATAL:
+      printf(ANSI_COLOR_RED "-- %s [FATAL]: %s\n" ANSI_COLOR_RESET, ctime(&now), message);
       break;
 
    default:

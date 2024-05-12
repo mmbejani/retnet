@@ -1,10 +1,5 @@
-#include "vector_op/vector_op_fp32.h"
-
 #include <stdio.h>
 #include <sys/sysinfo.h>
-
-#define AVX
-#define OMP
 
 #ifdef OMP
 #include <omp.h>
@@ -13,15 +8,14 @@
 #include <immintrin.h>
 #endif
 
+#include "logging.h"
+#include "vector_op/vector_op_fp32.h"
 
 void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restrict__ y, float32 *__restrict__ result)
 {
     void *vz;
     if (posix_memalign(&vz, F32x8_AVX_ALGIN, sizeof(float32) * n) != 0)
-    {
-        perror("The allocation cannot be done currectly");
-        exit(EXIT_FAILURE);
-    }
+        logger(FATAL, "There is a error to allocate align memory");
     result = (float32 *)vz;
 #ifdef AVX
     const int n_partial = (n & ~(F32_AVX_NREG - 1));
@@ -54,6 +48,7 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
 
 #pragma omp parallel for
 #endif
+    float32 *z = (float32*) vz;
     for (size_t i = 0; i < n; i++)
         z[i] = x[i] * y[i];
 

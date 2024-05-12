@@ -2,12 +2,16 @@
  * This header file contain tensor
  *
  */
-#include <stdint.h>
-#include "dtype.h"
+#include "block.h"
 
 typedef char bool;
 const char true = 1;
 const char false = 0;
+
+typedef struct {
+    uint16_t *data;
+    unsigned char size;
+} array_uint16_t;
 
 /**
  * This is a common tensor with precision float32
@@ -36,12 +40,8 @@ typedef struct
  */
 typedef struct
 {
-    float32 *scales;
-    float32 *bias;
-    int8_t *data;
-    uint16_t *dims;
-    uint16_t block_size;
-    uint16_t num_dims;
+    block_q8 *data;
+    array_uint16_t sizes;
 } tensor8q;
 
 /**
