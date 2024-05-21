@@ -1,8 +1,9 @@
-#include "tensor.h"
 
+#include "module.hpp"
 
-struct GroupNorm
+struct GroupNorm : Module
 {
+    // Network parameters
     short num_groups, num_channels;
     const float32 eps = 0.00001f;
     bool affine = true;
@@ -10,5 +11,7 @@ struct GroupNorm
     tensor *weight;
     tensor *bias;
 
-    tensor forward(tensor *x) noexcept;
+    // Network meta data for computation graph
+
+    tensor *call(tensor *x) const override;
 };

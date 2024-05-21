@@ -1,8 +1,11 @@
-#include "tensor.h"
+#include "module.hpp"
 
 struct Linear
 {
+    // The pointer of parameters
     tensor *weight, *bias;
 
-    tensor forward(tensor *x) noexcept;
+    
 };
+
+
