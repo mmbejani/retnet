@@ -11,7 +11,5 @@ struct GroupNorm : Module
     tensor *weight;
     tensor *bias;
 
-    // Network meta data for computation graph
-
     tensor *call(tensor *x) const override;
 };
