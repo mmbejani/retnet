@@ -4,10 +4,6 @@
  */
 #include "block.h"
 
-typedef char bool;
-const char true = 1;
-const char false = 0;
-
 typedef struct {
     uint16_t *data;
     unsigned char size;
