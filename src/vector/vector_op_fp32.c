@@ -1,15 +1,20 @@
 #include <stdio.h>
 #include <sys/sysinfo.h>
 
-#ifdef OMP
+#define USE_MKL
+#ifdef USE_MKL
+#include "mkl.h"
+#else
+#ifdef USE_OMP
 #include <omp.h>
 #endif
-#ifdef AVX
+#ifdef USE_AVX
 #include <immintrin.h>
+#endif
 #endif
 
 #include "logging.h"
-#include "vector_op/vector_op_fp32.h"
+#include "vector/vector_op_fp32.h"
 
 void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restrict__ y, float32 *__restrict__ result)
 {
@@ -17,7 +22,7 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
     if (posix_memalign(&vz, F32x8_AVX_ALGIN, sizeof(float32) * n) != 0)
         logger(FATAL, "There is a error to allocate align memory");
     result = (float32 *)vz;
-#ifdef AVX
+#ifdef USE_SIMD
     const int n_partial = (n & ~(F32_AVX_NREG - 1));
 #define F32_VEC_4 4
 
@@ -42,13 +47,13 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
     *result += rediual;
     return;
 #else
-#ifdef OMP
+#ifdef USE_OMP
     // use it with caution, this may make it slower! (the spwanning thread have overhead)
     SET_OMP_THREADS();
 
 #pragma omp parallel for
 #endif
-    float32 *z = (float32*) vz;
+    float32 *z = (float32 *)vz;
     for (size_t i = 0; i < n; i++)
         z[i] = x[i] * y[i];
 
@@ -61,7 +66,7 @@ void vec_dot_prod_f32(const size_t n, float32 *__restrict__ x, float32 *__restri
 void vec_reduce_sum_f32(const size_t n, void *__restrict__ vx, float32 *__restrict__ result)
 {
     float32 r = 0;
-#ifdef OMP
+#ifdef USE_OMP
     float32 *x = (float32 *)vx;
     SET_OMP_THREADS();
     register size_t reduce_size = n;
@@ -75,7 +80,7 @@ void vec_reduce_sum_f32(const size_t n, void *__restrict__ vx, float32 *__restri
 
     for (size_t i = 0; i < reduce_size; i++)
         r += x[i];
-#elif defined(AVX)
+#elif defined(USE_SIMD)
     __m128 x = *(__m128 *)vx;
     __m128 reduced_x = _mm_hadd_ps(x, x);
     *result = _mm_cvtss_f32(_mm_hadd_ps(reduced_x, reduced_x));

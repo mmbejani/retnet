@@ -1,5 +1,5 @@
 #include "dtype.h"
-#include "vector_op/vector_op_fp16.h"
+#include "vector/vector_op_fp16.h"
 
 float32 *convert_fp16_to_fp32(const size_t n, float16 *__restrict__ x)
 {

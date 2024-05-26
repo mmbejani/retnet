@@ -4,13 +4,15 @@ project(retnet LANGUAGES CXX)
 
 include(cmake/function.cmake)
 include(cmake/intrin.cmake)
+include(cmake/mkl.cmake)
 
-set(CUDA 0 CACHE STRING "If you set this flag to '1', the code base is compiled in CUDA, otherwise it will be compiled for CPU")
+set(SIMD 0 CACHE STRING "If you set use AVX")
+set(USE_MKL 0 CACHE STRING "If you set this flag to '1' use Math Kernel Library (recommended for float computation)")
 
-if (${CUDA})
-    message(STATUS "The code is going to compile for CUDA")
-    
-else()
+check_for_mkl_available(USE_MKL)
+
+
+if (SIMD)
     set(USE_OMP 0 CACHE STRING "If you set this flag '1', in some part of code, OpenMP is used to make performance better (default value is '0')")
 
     if(USE_OMP)

@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <immintrin.h>
 
-#include "vector_op/vector_op_q8.h"
+#include "vector/vector_op_q8.h"
 #include "macro/constant.h"
 
 #if __cplusplus
